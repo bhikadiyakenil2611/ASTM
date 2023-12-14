@@ -1,109 +1,61 @@
-import serial
+# import serial
+# def send_ack(serial_port):
+#     # Assuming ACK is a single byte, you can modify this based on your requirement
+#     ack_byte = b'\x06'  # ASCII value for ACK
+#
+#     try:
+#         # Send ACK
+#         serial_port.write(ack_byte)
+#         print("ACK sent successfully")
+#     except Exception as e:
+#         print(f"Error sending ACK: {e}")
+#
+#
+# def main():
+#     # Adjust these settings based on your setup
+#     serial_port_name = 'COM1'  # Change to the appropriate serial port
+#     baud_rate = 9600  # Change to the appropriate baud rate
+#
+#     try:
+#         # Open serial port
+#         serial_port = serial.Serial(port=serial_port_name, baudrate=baud_rate, timeout=1)
+#         print(f"Serial port {serial_port_name} opened successfully")
+#
+#         while True:
+#             # Read data from the serial port
+#             data = serial_port.read(1)  # Adjust the number of bytes to read based on your data format
+#
+#             if data:
+#                 print(f"Received data: {data}")
+#
+#                 # Process the received data
+#
+#                 # Send acknowledgment
+#                 send_ack(serial_port)
+#
+#     except Exception as e:
+#         print(f"Error: {e}")
+#     finally:
+#         # Close the serial port when done
+#         if serial_port.is_open:
+#             serial_port.close()
+#             print("Serial port closed")
+#
+#
+# if _name_ == "__main__":
+#     main()
 
-def send_ack(serial_port):
-    # Assuming ACK is a single byte, you can modify this based on your requirement
-    ack_byte = b'\x06'  # ASCII value for ACK
-    
-    try:
-        # Send ACK
-        serial_port.write(ack_byte)
-        print("ACK sent successfully")
-    except Exception as e:
-        print(f"Error sending ACK: {e}")
-
-def main():
-    # Adjust these settings based on your setup
-    serial_port_name = 'COM1'  # Change to the appropriate serial port
-    baud_rate = 9600  # Change to the appropriate baud rate
-    
-    try:
-        # Open serial port
-        serial_port = serial.Serial(port=serial_port_name, baudrate=baud_rate, timeout=1)
-        print(f"Serial port {serial_port_name} opened successfully")
-
-        while True:
-            # Read data from the serial port
-            data = serial_port.read(1)  # Adjust the number of bytes to read based on your data format
-            
-            if data:
-                print(f"Received data: {data}")
-
-                # Process the received data
-
-                # Send acknowledgment
-                send_ack(serial_port)
-
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        # Close the serial port when done
-        if serial_port.is_open:
-            serial_port.close()
-            print("Serial port closed")
-
-if _name_ == "__main__":
-    main()
-    
-    
-    
-    
-    
-    
-    
 ###################################################################################################################################################################################################################################
 ###################################################################################################################################################################################################################################
 
 
-
-
-#!/usr/bin/python3
+# !/usr/bin/python3
 import sys
 
 # import fcntl
 
-# defaults###############
-
-############################
-##########Start of (tty vs tcp)######
-############################
-
-# tty -> uncoment as needed
 connection_type = 'tty'
 input_tty = 'COM4'
-
-# tcp ->uncomment as needed
-# connection_type = 'tcp'
-# # host_address='10.206.10.26'
-# # host_address='11.207.1.1'
-# # host_address='12.207.3.240'
-# host_address = '0.0.0.0'
-host_port = '2575'
-
-############################
-##########END of (tty vs tcp)######
-############################
-
-####################################################################################*********
-# #!/usr/bin/python3
-# astm_log_filename='C:\\var\log\\vitros_read.log'  #for windows
-# file2mysql_log_filename='C:\\var\log\\vitros_write.log'   #for Windows
-# #if you wish to be specific
-# #host_address='12.207.3.240'
-# #host_address='11.207.1.1'
-# #if you wish general declaration
-# host_address='127.0.0.1'
-# host_port='2577'
-# select_timeout=1
-# alarm_time=10
-# #trailing slash is must to reconstruct path
-#
-# # inbox_data='/root/vitros.inbox.data/'
-# # outbox_data='/root/vitros.outbox.data/'
-# inbox_arch='C:\\root\\vitros.inbox.data\\'     #for Windows
-# outbox_arch='C:\\root\\vitros.outbox.data\\'   #for Windows
-# equipment='VITROS3600'
-####################################################################################*********
-
 
 s = None
 x = None
@@ -191,8 +143,8 @@ def get_filename():
 def get_port():
     if (connection_type == 'tty'):
         try:
-            port = serial.Serial(input_tty, baudrate=9600, stopbits=serial.STOPBITS_ONE)
-            print(port)
+            port = serial.Serial(port=input_tty, baudrate=9600, timeout=1)
+            print(f"Serial port {input_tty} opened successfully")
             return port
         except:
             exception_return = sys.exc_info()
@@ -258,6 +210,17 @@ def my_write(port, byte):
     elif (connection_type == 'tcp'):
         return port.send(byte)
 
+def send_ack(serial_port):
+    # Assuming ACK is a single byte, you can modify this based on your requirement
+    ack_byte = b'\x06'  # ASCII value for ACK
+
+    try:
+        # Send ACK
+        serial_port.write(ack_byte)
+        print("ACK sent successfully")
+    except Exception as e:
+        print(f"Error sending ACK: {e}")
+
 
 # main loop##########################
 if log == 0:
@@ -276,15 +239,6 @@ while True:
     if (byte == b''):
         logging.debug('<EOF> reached. Connection broken: details below')
         # <EOF> never reached with tty unless the device is not existing)
-        if (connection_type == 'tcp'):
-            logging.debug('(Broken) Listening Socket (s) details below:')
-            logging.debug(s)
-            logging.debug('(From While)Waiting for connection from a client....')
-            conn_tuple = s.accept()  # This waits till connected
-            logging.debug(
-                '(From While) Client request received. Listening+ Accepting Socket (conn_tuple) details below:')
-            logging.debug(conn_tuple)
-            port = conn_tuple[0]
 
     else:
         byte_array = byte_array + [chr(ord(byte))]  # add everything read to array, if not EOF. EOF have no ord
@@ -295,9 +249,7 @@ while True:
         logging.debug('Alarm stopped')
         byte_array = []  # empty array
         byte_array = byte_array + [chr(ord(byte))]  # add everything read to array requred here to add first byte
-        print("sending ACK...")
-        my_write(port, b'\x06');
-        print("sent ACK...!")
+        send_ack(port)
         cur_file = get_filename()  # get name of file to open
 
         x = open(cur_file, 'w')  # open file
@@ -309,7 +261,7 @@ while True:
     elif (byte == b'\x0a'):
         signal.alarm(0)
         logging.debug('Alarm stopped. LF received')
-        my_write(port, b'\x06');
+        send_ack(port)
         try:
             x.write(''.join(byte_array))  # write to file everytime LF received, to prevent big data memory problem
             byte_array = []  # empty array
