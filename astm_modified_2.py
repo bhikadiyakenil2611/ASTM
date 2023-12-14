@@ -1,100 +1,54 @@
-import serial
-
-def send_acknowledgment(ser):
-    # Assuming 'ACK' is the acknowledgment message
-    acknowledgment_message = b'ACK'
-
-    # Send the acknowledgment message
-    ser.write(acknowledgment_message)
-
-def main():
-    # Replace 'COM1' with the appropriate serial port on your system
-    serial_port = 'COM1'
-    baud_rate = 9600
-
-    try:
-        # Open the serial port
-        ser = serial.Serial(serial_port, baud_rate, timeout=1)
-
-        # Your existing code for receiving data from the lab machine
-        received_data = ser.readline()
-
-        # Your existing code for processing received data
-
-        # Send acknowledgment to the lab machine
-        send_acknowledgment(ser)
-
-        # Close the serial port
-        ser.close()
-
-    except serial.SerialException as e:
-        print(f"Error: {e}")
-
-if _name_ == "__main__":
-    main()
-    
-    
-
-
-
-
-
-
-
+# import serial
+#
+#
+# def send_acknowledgment(ser):
+#     # Assuming 'ACK' is the acknowledgment message
+#     acknowledgment_message = b'ACK'
+#
+#     # Send the acknowledgment message
+#     ser.write(acknowledgment_message)
+#
+#
+# def main():
+#     # Replace 'COM1' with the appropriate serial port on your system
+#     serial_port = 'COM1'
+#     baud_rate = 9600
+#
+#     try:
+#         # Open the serial port
+#         ser = serial.Serial(serial_port, baud_rate, timeout=1)
+#
+#         # Your existing code for receiving data from the lab machine
+#         received_data = ser.readline()
+#
+#         # Your existing code for processing received data
+#
+#         # Send acknowledgment to the lab machine
+#         send_acknowledgment(ser)
+#
+#         # Close the serial port
+#         ser.close()
+#
+#     except serial.SerialException as e:
+#         print(f"Error: {e}")
+#
+#
+# if _name_ == "__main__":
+#     main()
 
 ###################################################################################################################################################################################################################################
 ###################################################################################################################################################################################################################################
 
 
-
-
-#!/usr/bin/python3
+# !/usr/bin/python3
 import sys
 
 # import fcntl
-
-# defaults###############
-
-############################
-##########Start of (tty vs tcp)######
-############################
 
 # tty -> uncoment as needed
 connection_type = 'tty'
 input_tty = 'COM4'
 
-# tcp ->uncomment as needed
-# connection_type = 'tcp'
-# # host_address='10.206.10.26'
-# # host_address='11.207.1.1'
-# # host_address='12.207.3.240'
-# host_address = '0.0.0.0'
-host_port = '2575'
-
-############################
-##########END of (tty vs tcp)######
-############################
-
-####################################################################################*********
-# #!/usr/bin/python3
-# astm_log_filename='C:\\var\log\\vitros_read.log'  #for windows
-# file2mysql_log_filename='C:\\var\log\\vitros_write.log'   #for Windows
-# #if you wish to be specific
-# #host_address='12.207.3.240'
-# #host_address='11.207.1.1'
-# #if you wish general declaration
-# host_address='127.0.0.1'
-# host_port='2577'
-# select_timeout=1
-# alarm_time=10
-# #trailing slash is must to reconstruct path
-#
-# # inbox_data='/root/vitros.inbox.data/'
-# # outbox_data='/root/vitros.outbox.data/'
-# inbox_arch='C:\\root\\vitros.inbox.data\\'     #for Windows
-# outbox_arch='C:\\root\\vitros.outbox.data\\'   #for Windows
-# equipment='VITROS3600'
-####################################################################################*********
 
 
 s = None
@@ -146,14 +100,6 @@ if (connection_type == 'tty'):
         logging.debug(exception_return)
         logging.debug("serial module (apt install python3-serial) is required. Install them")
         quit()
-elif (connection_type == 'tcp'):
-    try:
-        import socket
-    except ModuleNotFoundError:
-        exception_return = sys.exc_info()
-        logging.debug(exception_return)
-        logging.debug("socket module is required. Generally installed with basic python installation.")
-        quit()
 
 
 def signal_handler(signal, frame):
@@ -183,7 +129,7 @@ def get_filename():
 def get_port():
     if (connection_type == 'tty'):
         try:
-            port = serial.Serial(input_tty, baudrate=9600, stopbits=serial.STOPBITS_ONE)
+            port = serial.Serial(input_tty, baudrate=9600, stopbits=serial.STOPBITS_ONE, timeout=1)
             print(port)
             return port
         except:
@@ -192,63 +138,26 @@ def get_port():
             logging.debug('is tty really existing? Quiting')
             quit()
 
-    elif (connection_type == 'tcp'):
-        global s
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-        """Set TCP keepalive on an open socket.
-    It activates after 1 second (after_idle_sec) of idleness,
-    then sends a keepalive ping once every 3 seconds (interval_sec),
-    and closes the connection after 5 failed ping (max_fails), or 15 seconds
-    """
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-
-        s.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 1)
-        s.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 3)
-        s.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
-
-        try:
-            s.bind((host_address, int(host_port)))  # it is a tuple
-        except:
-            exception_return = sys.exc_info()
-            logging.debug(exception_return)
-            logging.debug('Some problem in bind. is ip and port correct? Quiting')
-            quit()
-        logging.debug('post-bind pre-listen')
-        s.listen(1)
-
-        logging.debug('Listening Socket (s) details below:')
-        logging.debug(s)
-
-        logging.debug('Waiting for connection from a client....')
-        conn_tuple = s.accept()  # This waits till connected
-
-        logging.debug('Client request received. Listening+ Accepting Socket (conn_tuple) details below:')
-        logging.debug(conn_tuple)
-
-        return conn_tuple[0]
-
 
 def my_read(port):
     if (connection_type == 'tty'):
-        print(str('data:' + str(port.read(1))));
-        return port.read(1)
-    elif (connection_type == 'tcp'):
-        try:
-            return port.recv(1)
-        except Exception as my_ex:
-            logging.debug(my_ex)
-            logging.debug('Network disconnection??')
-            return b''
+
+        Readline = port.readline()
+        print(Readline);
+        # print(str('data:' + str(port.read(1))));
+        # return port.read(1)
 
 
 def my_write(port, byte):
     if (connection_type == 'tty'):
         return port.write(byte)
-    elif (connection_type == 'tcp'):
-        return port.send(byte)
+
+def send_acknowledgment(ser):
+    # Assuming 'ACK' is the acknowledgment message
+    acknowledgment_message = b'ACK'
+    # Send the acknowledgment message
+    ser.write(acknowledgment_message)
+    print("sent ACK...!")
 
 
 # main loop##########################
@@ -268,15 +177,6 @@ while True:
     if (byte == b''):
         logging.debug('<EOF> reached. Connection broken: details below')
         # <EOF> never reached with tty unless the device is not existing)
-        if (connection_type == 'tcp'):
-            logging.debug('(Broken) Listening Socket (s) details below:')
-            logging.debug(s)
-            logging.debug('(From While)Waiting for connection from a client....')
-            conn_tuple = s.accept()  # This waits till connected
-            logging.debug(
-                '(From While) Client request received. Listening+ Accepting Socket (conn_tuple) details below:')
-            logging.debug(conn_tuple)
-            port = conn_tuple[0]
 
     else:
         byte_array = byte_array + [chr(ord(byte))]  # add everything read to array, if not EOF. EOF have no ord
@@ -287,9 +187,7 @@ while True:
         logging.debug('Alarm stopped')
         byte_array = []  # empty array
         byte_array = byte_array + [chr(ord(byte))]  # add everything read to array requred here to add first byte
-        print("sending ACK...")
-        my_write(port, b'\x06');
-        print("sent ACK...!")
+        send_acknowledgment(port)
         cur_file = get_filename()  # get name of file to open
 
         x = open(cur_file, 'w')  # open file
@@ -301,7 +199,7 @@ while True:
     elif (byte == b'\x0a'):
         signal.alarm(0)
         logging.debug('Alarm stopped. LF received')
-        my_write(port, b'\x06');
+        send_acknowledgment(port)
         try:
             x.write(''.join(byte_array))  # write to file everytime LF received, to prevent big data memory problem
             byte_array = []  # empty array
